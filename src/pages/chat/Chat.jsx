@@ -6,6 +6,7 @@ import { useRef } from "react";
 function Chat() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -18,27 +19,47 @@ function Chat() {
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
-
+    setIsLoading(true);
     const newMessage = {
       role: "user",
       content: inputValue,
     };
-
-    setMessages((prev) => [...prev, newMessage]);
+    const currentHistory = [...messages, newMessage];
+    setMessages(currentHistory);
     setInputValue("");
 
     // 这里添加调用API的逻辑
     try {
-      // 模拟API响应
-      const response = {
-        role: "assistant",
-        content:
-          "这是一个模拟的AI回复消息。实际使用时需要替换为真实的API调用。",
-      };
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 60000);
 
-      setMessages((prev) => [...prev, response]);
+      const url = new URL("http://localhost:8000/chat");
+
+      const raw = { history: currentHistory, content: inputValue };
+
+      const response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify(raw),
+        signal: abortController.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.log("API请求失败");
+        return;
+      }
+
+      const res = await response.json();
+
+      if (res.code === 0) {
+        const history = [...currentHistory, res.data];
+        setMessages(history);
+      }
     } catch (error) {
       console.error("发送消息失败:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,8 +114,9 @@ function Chat() {
               onClick={handleSend}
               variant="ghost"
               className="px-10 h-20 text-xl text-zinc-800 rounded-lg hover:bg-zinc-200"
+              disabled={isLoading || !inputValue.trim()}
             >
-              发送
+              {isLoading ? "发送中..." : "发送"}
             </Button>
           </div>
         </div>

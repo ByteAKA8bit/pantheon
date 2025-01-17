@@ -101,72 +101,76 @@ function Home() {
   }, []);
 
   return (
-    <div className="h-[100vh] w-[100vw] flex flex-col flex-1 justify-center items-center bg-zinc-100">
-      <header className="flex w-3/5 items-center justify-between p-4">
-        <h2 className="text-2xl font-bold">众神殿</h2>
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" className="hover:bg-zinc-300">
-            Whitepaper
-          </Button>
-          <Button variant="ghost" className="hover:bg-zinc-300">
-            Contact Wallet
-          </Button>
+    <div className="flex flex-col min-h-screen flex-1 justify-between items-center bg-zinc-100">
+      <header className="flex h-[70px] w-3/5">
+        <div className="flex w-full items-center justify-between">
+          <h2 className="text-2xl font-bold">众神殿</h2>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="hover:bg-zinc-300">
+              Whitepaper
+            </Button>
+            <Button variant="ghost" className="hover:bg-zinc-300">
+              Contact Wallet
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="flex flex-col justify-center items-center flex-1 p-8 w-3/5">
-        <div className="w-full flex justify-end p-8 pr-2">
-          <div className="flex flex-col gap-4">
-            {PointsList.map((item) => (
-              <div key={item.label}>
-                <div>
-                  {item.label}: {item.value}
+      <main className="flex w-3/5 h-[calc(100vh-140px)] flex-col justify-center items-center flex-1 p-4">
+        <div>
+          <div className="w-full flex justify-end p-4 pr-2">
+            <div className="flex flex-col gap-4">
+              {PointsList.map((item) => (
+                <div key={item.label}>
+                  <div>
+                    {item.label}: {item.value}
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+          <Card className="w-full max-h-[500px] flex-1 rounded-2xl">
+            <div className="flex">
+              <div className="w-[30%] relative">
+                <img
+                  src={godImage}
+                  alt="财神"
+                  className={`absolute -left-[25%] -top-[25%] min-w-[140%] h-[140%] max-h-[600px] max-w-[420px] object-contain transform scale-x-[-1]`}
+                />
               </div>
-            ))}
-          </div>
+              <div className="w-[70%] p-8">
+                <CardHeader>
+                  <CardTitle className="text-4xl font-bold">财神</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xl py-6 tracking-wid6">
+                    世界各地神话中神的形象多姿多彩。古希腊神话里，宙斯是众神之王，掌管雷电，他有着和凡人相似的七情六欲，会嫉妒、发怒，还与诸神、凡人之间产生诸多爱恨纠葛:中国神话体系庞大，盘古开天辟地，以一己之力撑开混沌、分化天地，女娲抟土造人、炼石补天，是庇佑人类的创世、救世女神。
+                  </p>
+                </CardContent>
+                <CardFooter className="flex justify-around gap-4">
+                  <Button
+                    className="w-[200px] h-12 text-lg text-black bg-zinc-200 hover:bg-zinc-300"
+                    onClick={() => setIsShareOpen(true)}
+                  >
+                    <MessageSquare className="mr-1 h-5 w-5" />
+                    分享并开始聊天
+                  </Button>
+                  <Button
+                    className="w-[200px] h-12 text-lg text-black bg-zinc-200 hover:bg-zinc-300"
+                    onClick={() => setIsDonateOpen(true)}
+                  >
+                    <Wallet className="mr-1 h-5 w-5" />
+                    上香
+                  </Button>
+                </CardFooter>
+              </div>
+            </div>
+          </Card>
         </div>
-        <Card className="w-full h-2/3 rounded-2xl">
-          <div className="flex h-full">
-            <div className="w-[30%] h-full relative">
-              <img
-                src={godImage}
-                alt="财神"
-                className="absolute -left-[25%] -top-[25%] min-w-[140%] h-[140%] object-contain transform scale-x-[-1]"
-              />
-            </div>
-            <div className="w-[70%] p-10">
-              <CardHeader>
-                <CardTitle className="text-4xl font-bold">财神</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xl py-8 tracking-wide">
-                  世界各地神话中神的形象多姿多彩。古希腊神话里，宙斯是众神之王，掌管雷电，他有着和凡人相似的七情六欲，会嫉妒、发怒，还与诸神、凡人之间产生诸多爱恨纠葛:中国神话体系庞大，盘古开天辟地，以一己之力撑开混沌、分化天地，女娲抟土造人、炼石补天，是庇佑人类的创世、救世女神。
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-around gap-4">
-                <Button
-                  className="w-1/3 h-12 text-lg text-black bg-zinc-200 hover:bg-zinc-300"
-                  onClick={() => setIsShareOpen(true)}
-                >
-                  <MessageSquare className="mr-1 h-5 w-5" />
-                  分享并开始聊天
-                </Button>
-                <Button
-                  className="w-1/3 h-12 text-lg text-black bg-zinc-200 hover:bg-zinc-300"
-                  onClick={() => setIsDonateOpen(true)}
-                >
-                  <Wallet className="mr-1 h-5 w-5" />
-                  上香
-                </Button>
-              </CardFooter>
-            </div>
-          </div>
-        </Card>
       </main>
 
-      <footer className="p-4 text-center text-sm text-gray-500">
-        <div className="flex items-center justify-center gap-4">
+      <footer className="h-[70px] text-center text-sm text-gray-500">
+        <div className="flex items-center justify-center gap-4 p-4">
           <p>© 2025 Gods,Inc..All rights reserved.Privacy Terms</p>
           <div className="flex gap-1">
             <Button variant="ghost" size="icon">
