@@ -28,7 +28,7 @@ function Home() {
     },
     {
       label: "当前积分B",
-      value: 5464646,
+      value: 0,
     },
   ]);
 
@@ -135,7 +135,7 @@ function Home() {
                 <img
                   src={godImage}
                   alt="财神"
-                  className={`absolute -left-[25%] -top-[25%] min-w-[140%] h-[140%] max-h-[600px] max-w-[420px] object-contain transform scale-x-[-1]`}
+                  className={`absolute -left-[40%] -top-[25%] min-w-[100%] h-[140%] max-h-[600px] max-w-[420px] object-contain transform scale-x-[-1]`}
                 />
               </div>
               <div className="w-[70%] p-8">
