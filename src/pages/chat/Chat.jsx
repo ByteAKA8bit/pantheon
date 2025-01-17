@@ -17,44 +17,93 @@ function Chat() {
     scrollToBottom();
   }, [messages]);
 
+  // http demo
+  // const handleSend = async () => {
+  //   if (!inputValue.trim()) return;
+  //   setIsLoading(true);
+  //   const newMessage = {
+  //     role: "user",
+  //     content: inputValue,
+  //   };
+  //   const currentHistory = [...messages, newMessage];
+  //   setMessages(currentHistory);
+  //   setInputValue("");
+
+  //   // 这里添加调用API的逻辑
+  //   try {
+  //     const abortController = new AbortController();
+  //     const timeoutId = setTimeout(() => abortController.abort(), 60000);
+
+  //     const url = new URL("http://localhost:8000/chat");
+
+  //     const raw = { history: currentHistory, content: inputValue };
+
+  //     const response = await fetch(url, {
+  //       method: "POST",
+  //       body: JSON.stringify(raw),
+  //       signal: abortController.signal,
+  //     });
+
+  //     clearTimeout(timeoutId);
+
+  //     if (!response.ok) {
+  //       console.log("API请求失败");
+  //       return;
+  //     }
+
+  //     const res = await response.json();
+
+  //     if (res.code === 0) {
+  //       const history = [...currentHistory, res.data];
+  //       setMessages(history);
+  //     }
+  //   } catch (error) {
+  //     console.error("发送消息失败:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleSend = async () => {
     if (!inputValue.trim()) return;
     setIsLoading(true);
+
     const newMessage = {
       role: "user",
       content: inputValue,
     };
+
     const currentHistory = [...messages, newMessage];
     setMessages(currentHistory);
     setInputValue("");
 
-    // 这里添加调用API的逻辑
     try {
-      const abortController = new AbortController();
-      const timeoutId = setTimeout(() => abortController.abort(), 60000);
-
-      const url = new URL("http://localhost:8000/chat");
-
-      const raw = { history: currentHistory, content: inputValue };
-
-      const response = await fetch(url, {
+      const response = await fetch("http://localhost:8000/chat/stream", {
         method: "POST",
-        body: JSON.stringify(raw),
-        signal: abortController.signal,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          history: currentHistory,
+          content: inputValue,
+        }),
       });
 
-      clearTimeout(timeoutId);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = {
+        role: "assistant",
+        content: "",
+      };
 
-      if (!response.ok) {
-        console.log("API请求失败");
-        return;
-      }
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
 
-      const res = await response.json();
+        const chunk = decoder.decode(value);
+        assistantMessage.content += chunk;
 
-      if (res.code === 0) {
-        const history = [...currentHistory, res.data];
-        setMessages(history);
+        setMessages([...currentHistory, assistantMessage]);
       }
     } catch (error) {
       console.error("发送消息失败:", error);
