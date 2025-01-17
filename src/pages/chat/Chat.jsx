@@ -24,6 +24,8 @@ function Chat() {
       role: "user",
       content: inputValue,
     };
+    console.log(messages,'messages');
+    
     const currentHistory = [...messages, newMessage];
     setMessages(currentHistory);
     setInputValue("");
@@ -33,12 +35,15 @@ function Chat() {
       const abortController = new AbortController();
       const timeoutId = setTimeout(() => abortController.abort(), 60000);
 
-      const url = new URL("http://localhost:8000/chat");
+      const url = new URL("http://localhost:9900/v1/completions");
 
-      const raw = { history: currentHistory, content: inputValue };
+      const raw = { history: messages, content: inputValue };
 
       const response = await fetch(url, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify(raw),
         signal: abortController.signal,
       });
@@ -53,7 +58,11 @@ function Chat() {
       const res = await response.json();
 
       if (res.code === 0) {
-        const history = [...currentHistory, res.data];
+        const aiMessage = {
+          role: res.data.role,
+          content: res.data.content,
+        };
+        const history = [...currentHistory, aiMessage];
         setMessages(history);
       }
     } catch (error) {
