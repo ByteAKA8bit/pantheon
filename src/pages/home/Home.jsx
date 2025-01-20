@@ -20,6 +20,7 @@ import { useEffect } from "react";
 // 
 import { modal } from './components/config';
 import { useConnect, useAccount } from 'wagmi'
+// import { getAccount } from '@wagmi/core'
 
 function Home() {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ function Home() {
 
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isDonateOpen, setIsDonateOpen] = useState(false);
+
+  const { address, isConnected } = useAccount();; // 钱包地址
 
   const shareButtons = [
     {
@@ -57,6 +60,18 @@ function Home() {
   ];
 
   const fetchPoints = async () => {
+    // const account = getAccount(modal)
+    console.log('----fetchPoints---', address, isConnected)
+    console.log('----getIsConnected()---', modal.getIsConnected())
+    console.log('----getAddress()---', modal.getAddress())
+    if (!address) {
+      // 如果 address 没有值，设置积分列表为默认值
+      setPointsList([
+        { label: "当前积分A", value: 0 },
+        { label: "当前积分B", value: 0 }
+      ]);
+      return;
+    }
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
@@ -104,16 +119,16 @@ function Home() {
   }, []);
 
   // 连接钱包
-  const { address } = useAccount()
   const connectWallet = async () => {
-    console.log('----connectWallet---')
+    console.log('----connectWallet---', isConnected, modal.getIsConnected())
+    console.log('----account---', isConnected, modal.getAddress())
     try {
       // 打开钱包模态框
       await modal.open().catch(error => {
         console.error('Failed to open wallet modal:', error);
         throw error; // 继续抛出错误以触发外层 catch
       });
-      setAddress(modal.address);
+      // localStorage.setItem('address', modal.getAddress());
     } catch (error) {
       console.error('Wallet connection failed:', error);
     }
@@ -132,8 +147,11 @@ function Home() {
             <Button variant="ghost" className="hover:bg-zinc-300" onClick={connectWallet}>
               Contact Wallet
             </Button>
-            <div id="address">Address: {address}</div>
+           
           </div>
+          {isConnected &&  <label id="address" className="block mt-2">
+            Address: {address}
+          </label>}
         </div>
       </header>
 
