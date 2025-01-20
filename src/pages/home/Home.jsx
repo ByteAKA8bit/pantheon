@@ -17,6 +17,9 @@ import { Twitter } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+// 
+import { modal } from './components/config';
+import { useConnect, useAccount } from 'wagmi'
 
 function Home() {
   const navigate = useNavigate();
@@ -100,7 +103,24 @@ function Home() {
     fetchPoints();
   }, []);
 
+  // 连接钱包
+  const { address } = useAccount()
+  const connectWallet = async () => {
+    console.log('----connectWallet---')
+    try {
+      // 打开钱包模态框
+      await modal.open().catch(error => {
+        console.error('Failed to open wallet modal:', error);
+        throw error; // 继续抛出错误以触发外层 catch
+      });
+      setAddress(modal.address);
+    } catch (error) {
+      console.error('Wallet connection failed:', error);
+    }
+  };
+
   return (
+    
     <div className="flex flex-col min-h-screen flex-1 justify-between items-center bg-zinc-100">
       <header className="flex h-[70px] w-3/5">
         <div className="flex w-full items-center justify-between">
@@ -109,9 +129,10 @@ function Home() {
             <Button variant="ghost" className="hover:bg-zinc-300">
               Whitepaper
             </Button>
-            <Button variant="ghost" className="hover:bg-zinc-300">
+            <Button variant="ghost" className="hover:bg-zinc-300" onClick={connectWallet}>
               Contact Wallet
             </Button>
+            <div id="address">Address: {address}</div>
           </div>
         </div>
       </header>
