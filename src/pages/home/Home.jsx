@@ -18,9 +18,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 // 
-import { modal } from './components/config';
+import { modal, config } from './components/config';
 import { useConnect, useAccount } from 'wagmi'
-// import { getAccount } from '@wagmi/core'
+// import { getAccount } from 'wagmi'
+
+import { reconnect } from '@wagmi/core';
 
 function Home() {
   const navigate = useNavigate();
@@ -39,7 +41,11 @@ function Home() {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isDonateOpen, setIsDonateOpen] = useState(false);
 
-  const { address, isConnected } = useAccount();; // 钱包地址
+  const { address, isConnected } = useAccount(); // 钱包地址
+  const [myAddress, setMyAddress] = useState(null);
+  const [token, setToken] = useState(null);
+  
+  reconnect(config);
 
   const shareButtons = [
     {
@@ -59,12 +65,25 @@ function Home() {
     },
   ];
 
+  
+
   const fetchPoints = async () => {
+  
     // const account = getAccount(modal)
-    console.log('----fetchPoints---', address, isConnected)
-    console.log('----getIsConnected()---', modal.getIsConnected())
+    const storedAddress = localStorage.getItem('address');
+    if (storedAddress) {
+      // 你可以在这里执行其他操作，比如保存到本地存储或发送请求
+      console.log('fetchPoints Loaded address from local storage:', storedAddress);
+      // 如果你只是使用 useState，你可以直接更新状态
+      setMyAddress(storedAddress)
+    } else {
+      console.log('No address found in local storage');
+    }
+    // console.log('----fetchPoints---', myAddress, storedAddress)
+    console.log('----getIsConnected()---', address, myAddress, modal.getIsConnected())
     console.log('----getAddress()---', modal.getAddress())
-    if (!address) {
+    
+    if (!address && !storedAddress) {
       // 如果 address 没有值，设置积分列表为默认值
       setPointsList([
         { label: "当前积分A", value: 0 },
@@ -76,20 +95,24 @@ function Home() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
 
-      const url = new URL("http://localhost:8080");
-      url.pathname = "/api/points";
+      const url = new URL("http://127.0.0.1:9900");
+      url.pathname = "/v1/login";
 
       const headers = new Headers();
       headers.append("Content-Type", "application/json");
-
+      // 请求体数据
+      const requestBody = {
+        account: storedAddress || address, // 
+      };
       // 模拟API请求获取积分数据
       const response = await fetch(url, {
-        method: "GET",
+        method: "POST",
         headers: headers,
         signal: controller.signal,
         redirect: "follow",
+        body: JSON.stringify(requestBody), // 将请求体数据转换为 JSON 字符串
       });
-
+      console.log('----response---', response)
       clearTimeout(timeoutId);
 
       if (!response.ok) {
@@ -97,16 +120,18 @@ function Home() {
       }
 
       const data = await response.json();
-
+      console.log('----response--data-', data)
+      setToken(data.data.token);
+      localStorage.setItem('token', data.data.token);
       // 更新积分列表
       setPointsList([
         {
           label: "当前积分A",
-          value: data.pointsA || 0,
+          value: data.data.scoreA || 0,
         },
         {
           label: "当前积分B",
-          value: data.pointsB || 0,
+          value: data.data.scoreB || 0,
         },
       ]);
     } catch (error) {
@@ -114,9 +139,28 @@ function Home() {
     }
   };
 
+  const onAddressChange = async () => {
+    console.log('onAddressChange:', address, isConnected);
+    if (address) {
+      // 当 address 有值时执行的操作
+      // console.log('Address is available:', address, isConnected);
+      // 你可以在这里执行其他操作，比如保存到本地存储或发送请求
+      localStorage.setItem('address', address);
+      setMyAddress(address);
+    } else{
+      setMyAddress(null);
+    }
+    
+    await fetchPoints();
+  };
+
   useEffect(() => {
-    fetchPoints();
-  }, []);
+    onAddressChange();
+  }, [address, isConnected]);
+
+  // useEffect(() => {
+  //   fetchPoints();
+  // }, [])
 
   // 连接钱包
   const connectWallet = async () => {
@@ -128,7 +172,9 @@ function Home() {
         console.error('Failed to open wallet modal:', error);
         throw error; // 继续抛出错误以触发外层 catch
       });
+      // console.log('----getAddress---', modal.getAddress())
       // localStorage.setItem('address', modal.getAddress());
+      // localStorage.setItem('isConnected', true);
     } catch (error) {
       console.error('Wallet connection failed:', error);
     }
@@ -149,8 +195,8 @@ function Home() {
             </Button>
            
           </div>
-          {isConnected &&  <label id="address" className="block mt-2">
-            Address: {address}
+          {myAddress &&  <label id="address" className="block mt-2">
+            Address: {myAddress}
           </label>}
         </div>
       </header>

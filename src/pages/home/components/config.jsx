@@ -19,7 +19,9 @@ export const config = defaultWagmiConfig({
   projectId,
   metadata,
 });
-reconnect(config);
+
+// 自动连接
+// reconnect(config);
 
 export const modal = createWeb3Modal({
   wagmiConfig: config,

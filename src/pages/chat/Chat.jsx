@@ -7,6 +7,7 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFinish, setIsFinish] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -29,6 +30,8 @@ function Chat() {
     const currentHistory = [...messages, newMessage];
     setMessages(currentHistory);
     setInputValue("");
+    const token = localStorage.getItem('token');
+    console.log('----token---', token)
 
     // 这里添加调用API的逻辑
     try {
@@ -42,7 +45,8 @@ function Chat() {
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "token": token,
         },
         body: JSON.stringify(raw),
         signal: abortController.signal,
@@ -56,7 +60,7 @@ function Chat() {
       }
 
       const res = await response.json();
-
+      console.log('----res---', res)
       if (res.code === 0) {
         const aiMessage = {
           role: res.data.role,
@@ -64,6 +68,7 @@ function Chat() {
         };
         const history = [...currentHistory, aiMessage];
         setMessages(history);
+        setIsFinish(res.data.isFinish);
       }
     } catch (error) {
       console.error("发送消息失败:", error);
@@ -119,7 +124,8 @@ function Chat() {
               placeholder="输入消息..."
               className="h-20 text-lg flex-1 p-2 rounded-lg bg-white focus:outline-none"
             />
-            <Button
+            {!isFinish && (
+              <Button
               onClick={handleSend}
               variant="ghost"
               className="px-10 h-20 text-xl text-zinc-800 rounded-lg hover:bg-zinc-200"
@@ -127,6 +133,7 @@ function Chat() {
             >
               {isLoading ? "发送中..." : "发送"}
             </Button>
+            )}
           </div>
         </div>
       </div>
